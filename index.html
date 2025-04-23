@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Orçamentos</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .service-item {
+            background-color: #fff;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .total-display {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+        #resultContainer {
+            display: none;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="text-center">Gerador de Orçamentos</h2>
+                    </div>
+                    
+                    <div class="card-body">
+                        <form id="budgetForm">
+                            <div class="mb-3">
+                                <label for="clientName" class="form-label">Nome do Cliente</label>
+                                <input type="text" class="form-control" id="clientName" required>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="clientNeighborhood" class="form-label">Bairro</label>
+                                    <input type="text" class="form-control" id="clientNeighborhood" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="clientCity" class="form-label">Cidade</label>
+                                    <input type="text" class="form-control" id="clientCity" required>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <label for="eventDate" class="form-label">Data do Evento</label>
+                                    <input type="date" class="form-control" id="eventDate" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="eventTime" class="form-label">Hora do Evento</label>
+                                    <input type="time" class="form-control" id="eventTime" required>
+                                </div>
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <h4>Serviços</h4>
+                            <div id="servicesContainer">
+                                <!-- Serviços serão adicionados aqui -->
+                            </div>
+                            
+                            <button type="button" id="addService" class="btn btn-secondary mb-4">
+                                <i class="bi bi-plus"></i> Adicionar Serviço
+                            </button>
+                            
+                            <div class="total-display text-center">
+                                Total: R$ <span id="totalValue">0.00</span>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">Gerar Orçamento</button>
+                            </div>
+                        </form>
+                        
+                        <div id="resultContainer" class="mt-4">
+                            <div class="card">
+                                <div class="card-header bg-success text-white">
+                                    <h3>Orçamento Gerado</h3>
+                                </div>
+                                <div class="card-body" id="budgetResult">
+                                    <!-- Resultado será inserido aqui -->
+                                </div>
+                                <div class="card-footer">
+                                    <div class="d-flex justify-content-between">
+                                        <button id="generatePdf" class="btn btn-danger">
+                                            <i class="bi bi-file-earmark-pdf"></i> Salvar PDF
+                                        </button>
+                                        <button id="shareWhatsApp" class="btn btn-success">
+                                            <i class="bi bi-whatsapp"></i> Enviar por WhatsApp
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            const { jsPDF } = window.jspdf;
+            let serviceCount = 0;
+            
+            // Serviços disponíveis para autocomplete
+            const availableServices = [
+                "Arco desconstruído Mini",
+                "Arco desconstruído Mega",
+                "Painel Fotográfico",
+                "Mesas Decoradas",
+                "Iluminação Especial"
+            ];
+            
+            // Adicionar primeiro serviço
+            addService();
+            
+            // Botão para adicionar serviço
+            $('#addService').click(function() {
+                addService();
+            });
+            
+            // Formulário de orçamento
+            $('#budgetForm').submit(function(e) {
+                e.preventDefault();
+                generateBudget();
+            });
+            
+            // Botão para gerar PDF
+            $('#generatePdf').click(function() {
+                generatePDF();
+            });
+            
+            // Botão para compartilhar no WhatsApp
+            $('#shareWhatsApp').click(function() {
+                shareWhatsApp();
+            });
+            
+            // Função para adicionar novo serviço
+            function addService() {
+                serviceCount++;
+                const serviceHtml = `
+                    <div class="service-item" id="service-${serviceCount}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Serviço/Produto</label>
+                                <input type="text" class="form-control service-name" list="servicesList" required>
+                                <datalist id="servicesList">
+                                    ${availableServices.map(service => `<option value="${service}">`).join('')}
+                                </datalist>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Valor Unitário</label>
+                                <input type="number" class="form-control service-price" min="0" step="0.01" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Quantidade</label>
+                                <input type="number" class="form-control service-quantity" min="1" value="1" required>
+                            </div>
+                            <div class="col-md-1 d-flex align-items-end">
+                                <button type="button" class="btn btn-danger btn-sm remove-service" data-id="${serviceCount}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                $('#servicesContainer').append(serviceHtml);
+                
+                // Atualizar cálculo quando valores mudarem
+                $(`#service-${serviceCount} input`).on('input', calculateTotal);
+                
+                // Botão para remover serviço
+                $(`.remove-service[data-id="${serviceCount}"]`).click(function() {
+                    $(`#service-${serviceCount}`).remove();
+                    calculateTotal();
+                });
+            }
+            
+            // Calcular total
+            function calculateTotal() {
+                let total = 0;
+                
+                $('.service-item').each(function() {
+                    const price = parseFloat($(this).find('.service-price').val()) || 0;
+                    const quantity = parseInt($(this).find('.service-quantity').val()) || 0;
+                    total += price * quantity;
+                });
+                
+                $('#totalValue').text(total.toFixed(2));
+                return total;
+            }
+            
+            // Gerar orçamento
+            function generateBudget() {
+                const clientName = $('#clientName').val();
+                const neighborhood = $('#clientNeighborhood').val();
+                const city = $('#clientCity').val();
+                const eventDate = $('#eventDate').val();
+                const eventTime = $('#eventTime').val();
+                const total = calculateTotal();
+                const deposit = total * 0.5;
+                
+                let servicesHtml = '';
+                $('.service-item').each(function(index) {
+                    const service = $(this).find('.service-name').val();
+                    const price = parseFloat($(this).find('.service-price').val());
+                    const quantity = parseInt($(this).find('.service-quantity').val());
+                    const subtotal = price * quantity;
+                    
+                    servicesHtml += `
+                        <tr>
+                            <td>${service}</td>
+                            <td>${quantity}</td>
+                            <td>R$ ${price.toFixed(2)}</td>
+                            <td>R$ ${subtotal.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+                
+                const today = new Date().toLocaleDateString('pt-BR');
+                const formattedDate = new Date(eventDate).toLocaleDateString('pt-BR');
+                
+                const resultHtml = `
+                    <h4>Dados do Cliente</h4>
+                    <p><strong>Data de Emissão:</strong> ${today}</p>
+                    <p><strong>Cliente:</strong> ${clientName}</p>
+                    <p><strong>Local:</strong> ${neighborhood}, ${city}</p>
+                    <p><strong>Data do Evento:</strong> ${formattedDate}</p>
+                    <p><strong>Hora do Evento:</strong> ${eventTime}</p>
+                    
+                    <h4 class="mt-4">Serviços Contratados</h4>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Serviço</th>
+                                    <th>Qtd</th>
+                                    <th>Valor Unitário</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${servicesHtml}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th colspan="3">Total</th>
+                                    <th>R$ ${total.toFixed(2)}</th>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <h5>Forma de Pagamento</h5>
+                        <p>Crédito, Débito, PIX ou Dinheiro</p>
+                        
+                        <h5>Observações</h5>
+                        <p>Para agendamento solicitamos a entrada de 50% do valor (R$ ${deposit.toFixed(2)}). O restante deve ser pago no dia do evento após a conclusão dos serviços.</p>
+                    </div>
+                `;
+                
+                $('#budgetResult').html(resultHtml);
+                $('#resultContainer').show();
+                $('html, body').animate({
+                    scrollTop: $('#resultContainer').offset().top
+                }, 500);
+            }
+            
+            // Gerar PDF
+            function generatePDF() {
+                const doc = new jsPDF();
+                
+                // Cabeçalho
+                doc.setFontSize(18);
+                doc.setTextColor(40, 40, 40);
+                doc.text('ORÇAMENTO', 105, 20, { align: 'center' });
+                
+                doc.setFontSize(12);
+                doc.text(`Cliente: ${$('#clientName').val()}`, 14, 30);
+                doc.text(`Data do Evento: ${new Date($('#eventDate').val()).toLocaleDateString('pt-BR')}`, 14, 35);
+                doc.text(`Hora do Evento: ${$('#eventTime').val()}`, 14, 40);
+                doc.text(`Local: ${$('#clientNeighborhood').val()}, ${$('#clientCity').val()}`, 14, 45);
+                doc.text(`Emitido em: ${new Date().toLocaleDateString('pt-BR')}`, 14, 50);
+
+
+                // Adiciona uma linha
+                doc.line(14, 52, 196, 60);
+             
+                // Tabela de serviços
+                const serviceData = [];
+                $('.service-item').each(function() {
+                    const service = $(this).find('.service-name').val();
+                    const price = parseFloat($(this).find('.service-price').val());
+                    const quantity = parseInt($(this).find('.service-quantity').val());
+                    const subtotal = price * quantity;
+                    
+                    serviceData.push([
+                        service,
+                        quantity,
+                        `R$ ${price.toFixed(2)}`,
+                        `R$ ${subtotal.toFixed(2)}`
+                    ]);
+                });
+                
+                // Adiciona tabela
+                doc.autoTable({
+                    head: [['Serviço', 'Qtd', 'Valor Unitário', 'Subtotal']],
+                    body: serviceData,
+                    startY: 50,
+                    styles: { 
+                        cellPadding: 5,
+                        fontSize: 10,
+                        halign: 'center'
+                    },
+                    headStyles: {
+                        fillColor: [13, 110, 253]
+                    }
+                });
+                
+                // Total e observações
+                const total = calculateTotal();
+                const lastPosition = doc.lastAutoTable.finalY;
+                
+                doc.setFontSize(12);
+                doc.text(`Total: R$ ${total.toFixed(2)}`, 14, lastPosition + 15);
+                doc.text(`Forma de Pagamento: Crédito, Débito, PIX ou Dinheiro`, 14, lastPosition + 25);
+                doc.text(`Observação: Entrada de 50% (R$ ${(total * 0.5).toFixed(2)}) para agendamento.`, 14, lastPosition + 35);
+                
+                // Salva o PDF
+                doc.save(`Orçamento_${$('#clientName').val()}.pdf`);
+            }
+            
+            // Compartilhar no WhatsApp
+            function shareWhatsApp() {
+                const clientName = $('#clientName').val();
+                const total = calculateTotal();
+                const deposit = total * 0.5;
+                
+                let servicesText = '';
+                $('.service-item').each(function() {
+                    const service = $(this).find('.service-name').val();
+                    const price = parseFloat($(this).find('.service-price').val());
+                    const quantity = parseInt($(this).find('.service-quantity').val());
+                    const subtotal = price * quantity;
+                    
+                    servicesText += `▶ ${service} (${quantity}x R$ ${price.toFixed(2)}) = R$ ${subtotal.toFixed(2)}\n`;
+                });
+                
+                const message = `*ORÇAMENTO PARA ${clientName.toUpperCase()}*\n\n` +
+                                `*Serviços:*\n${servicesText}\n` +
+                                `*TOTAL: R$ ${total.toFixed(2)}*\n\n` +
+                                `*Forma de Pagamento:* Crédito, Débito, PIX ou Dinheiro\n` +
+                                `*Observação:* Entrada de 50% (R$ ${deposit.toFixed(2)}) para agendamento.`;
+                
+                window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
+            }
+        });
+    </script>
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
