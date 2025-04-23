@@ -395,14 +395,13 @@
                     const price = parseFloat($(this).find('.service-price').val());
                     const quantity = parseInt($(this).find('.service-quantity').val());
                     const subtotal = price * quantity;
-                    
-                    servicesText += `▶ ${service} (${quantity}x R$ ${price.toFixed(2)}) = R$ ${subtotal.toFixed(2)}\n`;
+                    servicesText += `- ${quantity}x ${service}`+`\n Valor............. R$ ${price.toFixed(2)}`;
                 });
                 
-                const message = `*ORÇAMENTO\n\n*`+
+                const message = `*ORÇAMENTO*\n\n`+
                                 `*Cliente:*  ${clientName.toUpperCase()}*\n\n` +
-                                `*Serviços:*\n${servicesText}\n` +
-                                `*Total: R$ ${total.toFixed(2)}*\n\n` +
+                                `*# Serviços:*\n${servicesText}\n` +
+                                `*Total:* R$ ${total.toFixed(2)}\n\n` +
                                 `*Forma de Pagamento:*\n\n`+ `Crédito, Débito, PIX ou Dinheiro\n\n` +
                                 `*Observação:*\n\n`+ `Para agendamento solicitamos a entrada de 50% do valor (R$ ${deposit.toFixed(2)}). O restante deve ser pago no dia do evento após a conclusão dos serviços.`;
                 
