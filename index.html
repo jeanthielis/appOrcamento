@@ -399,16 +399,15 @@
                     const quantity = parseInt($(this).find('.service-quantity').val());
                     const subtotal = price * quantity;
                     servicesText += `- ${quantity}x ${service}`+`\n Valor............. R$ ${price.toFixed(2)}\n`+
-                                    ` *Cores:* ${cores}\n`+
-                                    ` Subtotal.......... R$ ${subtotal.toFixed(2)}\n\n`;
+                                        `Subtotal.................. R$ ${subtotal.toFixed(2)}\n`+
+                                    `    *Cores:* ${cores}\n\n`;
                 });
                 
                 const message = `*ORÇAMENTO*\n\n`+
                                 `*Cliente:*  ${clientName.toUpperCase()}\n\n` +
                                 `*# Serviços:*\n${servicesText}\n` +
-                                `*Total:* R$ ${total.toFixed(2)}\n\n` +
-                                `*Local:*`+`\n ${$('#clientNeighborhood').val()}, ${$('#clientCity').val()}\n\n` +
-                                `*Emitido em:* ${new Date().toLocaleDateString('pt-BR')}\n\n` +
+                                `*# Total:* R$ ${total.toFixed(2)}\n\n` +
+                                `*Local:*`+`\n\n ${$('#clientNeighborhood').val()}, ${$('#clientCity').val()}\n\n` +
                                 `*Forma de Pagamento:*\n\n`+ `Crédito, Débito, PIX ou Dinheiro\n\n` +
                                 `*Observação:*\n\n`+ `- Os balões estão incluso no valor do Orçamento\n\n`+
                                                         `- Para agendamento solicitamos a entrada de 50% do valor (R$ ${deposit.toFixed(2)}). O restante deve ser pago no dia do evento após a conclusão dos serviços.`;
