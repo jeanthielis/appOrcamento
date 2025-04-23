@@ -395,15 +395,15 @@
                     const price = parseFloat($(this).find('.service-price').val());
                     const quantity = parseInt($(this).find('.service-quantity').val());
                     const subtotal = price * quantity;
-                    servicesText += `- ${quantity}x ${service}`+`\n Valor............. R$ ${price.toFixed(2)}`;
+                    servicesText += `- ${quantity}x ${service}`+`\n Valor............. R$ ${price.toFixed(2)}\n\n`;
                 });
                 
                 const message = `*ORÇAMENTO*\n\n`+
-                                `*Cliente:*  ${clientName.toUpperCase()}*\n\n` +
-                                `*# Serviços:*\n${servicesText}\n` +
+                                `*Cliente:*  ${clientName.toUpperCase()}\n\n` +
+                                `*# Serviços:*\n${servicesText}\n\n` +
                                 `*Total:* R$ ${total.toFixed(2)}\n\n` +
                                 `*Forma de Pagamento:*\n\n`+ `Crédito, Débito, PIX ou Dinheiro\n\n` +
-                                `*Observação:*\n\n`+ `Para agendamento solicitamos a entrada de 50% do valor (R$ ${deposit.toFixed(2)}). O restante deve ser pago no dia do evento após a conclusão dos serviços.`;
+                                `*Observação:*\n\n`+ `- Os balões estão incluso no valor do Orçamento\n\n`+` - Para agendamento solicitamos a entrada de 50% do valor (R$ ${deposit.toFixed(2)}). O restante deve ser pago no dia do evento após a conclusão dos serviços.`;
                 
                 window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
             }
