@@ -17,7 +17,7 @@
     
     <style>
         body {
-            padding: 20px;
+            padding: 0px;
             background-color: #f8f9fa;
         }
         .service-item {
@@ -42,15 +42,16 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container-fluid">
         <div class="row justify-content-center">
             <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h2 class="text-center">Gerador de Orçamentos</h2>
+                
+                    <div class="text-primary p-1 m-1">
+                        <h4 class="text-center">Gerador de Orçamentos</h4>
                     </div>
                     
-                    <div class="card-body">
+                    
+                    
                         <form id="budgetForm">
                             <div class="mb-3">
                                 <label for="clientName" class="form-label">Nome do Cliente</label>
@@ -69,11 +70,11 @@
                             </div>
                             
                             <div class="row mt-3">
-                                <div class="col-md-6">
+                                <div class="col-6">
                                     <label for="eventDate" class="form-label">Data do Evento</label>
                                     <input type="date" class="form-control" id="eventDate" required>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-6">
                                     <label for="eventTime" class="form-label">Hora do Evento</label>
                                     <input type="time" class="form-control" id="eventTime" required>
                                 </div>
@@ -119,8 +120,8 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    
+                
             </div>
         </div>
     </div>
@@ -132,11 +133,10 @@
             
             // Serviços disponíveis para autocomplete
             const availableServices = [
-                "Arco desconstruído Mini",
-                "Arco desconstruído Mega",
-                "Painel Fotográfico",
-                "Mesas Decoradas",
-                "Iluminação Especial"
+                "Arco desconstruído (Mini)",
+                "Arco desconstruído (Médio)",
+                "Arco desconstruído (Mega)",
+                "Mural Organico",
             ];
             
             // Adicionar primeiro serviço
@@ -176,18 +176,35 @@
                                     ${availableServices.map(service => `<option value="${service}">`).join('')}
                                 </datalist>
                             </div>
-                            <div class="col-md-3">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Cores</label>
+                                <input type="text" class="form-control service-cores"  required>
+                            </div>
+                        </div>    
+                        <div class="row">    
+                            <div class="col-6">
                                 <label class="form-label">Valor Unitário</label>
                                 <input type="number" class="form-control service-price" min="0" step="0.01" required>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-6">
                                 <label class="form-label">Quantidade</label>
                                 <input type="number" class="form-control service-quantity" min="1" value="1" required>
                             </div>
+                        </div>
+                        <br>
+                        <div class="row">
+                            <div class="col-6"></div>
+                            <div class="col-6 text-end">
+                                <a class="text-danger remove-service" data-id="${serviceCount}">
+                                    <i class="bi bi-trash"></i> Apagar  
+                                </a>
+                            </div>  
+  
+  
                             <div class="col-md-1 d-flex align-items-end">
-                                <button type="button" class="btn btn-danger btn-sm remove-service" data-id="${serviceCount}">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                
                             </div>
                         </div>
                     </div>
@@ -224,6 +241,7 @@
                 const clientName = $('#clientName').val();
                 const neighborhood = $('#clientNeighborhood').val();
                 const city = $('#clientCity').val();
+                const cores = $('#cores').val();
                 const eventDate = $('#eventDate').val();
                 const eventTime = $('#eventTime').val();
                 const total = calculateTotal();
@@ -233,6 +251,8 @@
                 $('.service-item').each(function(index) {
                     const service = $(this).find('.service-name').val();
                     const price = parseFloat($(this).find('.service-price').val());
+                    const cores = $(this).find('.service-cores').val();
+
                     const quantity = parseInt($(this).find('.service-quantity').val());
                     const subtotal = price * quantity;
                     
@@ -240,6 +260,7 @@
                         <tr>
                             <td>${service}</td>
                             <td>${quantity}</td>
+                            <td>${cores}</td>
                             <td>R$ ${price.toFixed(2)}</td>
                             <td>R$ ${subtotal.toFixed(2)}</td>
                         </tr>
@@ -252,11 +273,9 @@
                 const resultHtml = `
                     <h4>Dados do Cliente</h4>
                     <p><strong>Data de Emissão:</strong> ${today}</p>
-                    <p><strong>Cliente:</strong> ${clientName}</p>
-                    <p><strong>Local:</strong> ${neighborhood}, ${city}</p>
-                    <p><strong>Data do Evento:</strong> ${formattedDate}</p>
-                    <p><strong>Hora do Evento:</strong> ${eventTime}</p>
-                    
+                    <p><strong>Cliente:</strong> ${clientName} </p>
+                    <p><strong>Data do Evento:</strong> ${formattedDate} -  <strong>Hora do Evento:</strong> ${eventTime}</p>
+                    <p><strong>Local:</strong> ${neighborhood}, ${city}</p>                    
                     <h4 class="mt-4">Serviços Contratados</h4>
                     <div class="table-responsive">
                         <table class="table table-bordered">
@@ -264,6 +283,7 @@
                                 <tr>
                                     <th>Serviço</th>
                                     <th>Qtd</th>
+                                    <th>Cores</th>
                                     <th>Valor Unitário</th>
                                     <th>Subtotal</th>
                                 </tr>
@@ -306,6 +326,7 @@
                 doc.text('ORÇAMENTO', 105, 20, { align: 'center' });
                 
                 doc.setFontSize(12);
+                doc.text(`Dados do Cliente`, 14, 25);
                 doc.text(`Cliente: ${$('#clientName').val()}`, 14, 30);
                 doc.text(`Data do Evento: ${new Date($('#eventDate').val()).toLocaleDateString('pt-BR')}`, 14, 35);
                 doc.text(`Hora do Evento: ${$('#eventTime').val()}`, 14, 40);
@@ -320,6 +341,7 @@
                 const serviceData = [];
                 $('.service-item').each(function() {
                     const service = $(this).find('.service-name').val();
+                    const cores = $(this).find('.service-cores').val();
                     const price = parseFloat($(this).find('.service-price').val());
                     const quantity = parseInt($(this).find('.service-quantity').val());
                     const subtotal = price * quantity;
@@ -327,6 +349,7 @@
                     serviceData.push([
                         service,
                         quantity,
+                        cores,
                         `R$ ${price.toFixed(2)}`,
                         `R$ ${subtotal.toFixed(2)}`
                     ]);
@@ -334,7 +357,7 @@
                 
                 // Adiciona tabela
                 doc.autoTable({
-                    head: [['Serviço', 'Qtd', 'Valor Unitário', 'Subtotal']],
+                    head: [['Serviço', 'Qtd',`Cores`, 'Valor Unitário', 'Subtotal']],
                     body: serviceData,
                     startY: 50,
                     styles: { 
@@ -354,7 +377,7 @@
                 doc.setFontSize(12);
                 doc.text(`Total: R$ ${total.toFixed(2)}`, 14, lastPosition + 15);
                 doc.text(`Forma de Pagamento: Crédito, Débito, PIX ou Dinheiro`, 14, lastPosition + 25);
-                doc.text(`Observação: Entrada de 50% (R$ ${(total * 0.5).toFixed(2)}) para agendamento.`, 14, lastPosition + 35);
+                doc.text(`Observação: Para agendamento solicitamos uma entrada de 50% (R$ ${(total * 0.5).toFixed(2)}) o restante do valor , paga no dia do evento após a conclusão do serviço.`, 14, lastPosition + 35);
                 
                 // Salva o PDF
                 doc.save(`Orçamento_${$('#clientName').val()}.pdf`);
@@ -376,11 +399,12 @@
                     servicesText += `▶ ${service} (${quantity}x R$ ${price.toFixed(2)}) = R$ ${subtotal.toFixed(2)}\n`;
                 });
                 
-                const message = `*ORÇAMENTO PARA ${clientName.toUpperCase()}*\n\n` +
+                const message = `*ORÇAMENTO\n\n*`+
+                                `*Cliente:*  ${clientName.toUpperCase()}*\n\n` +
                                 `*Serviços:*\n${servicesText}\n` +
-                                `*TOTAL: R$ ${total.toFixed(2)}*\n\n` +
-                                `*Forma de Pagamento:* Crédito, Débito, PIX ou Dinheiro\n` +
-                                `*Observação:* Entrada de 50% (R$ ${deposit.toFixed(2)}) para agendamento.`;
+                                `*Total: R$ ${total.toFixed(2)}*\n\n` +
+                                `*Forma de Pagamento:*\n\n`+ `Crédito, Débito, PIX ou Dinheiro\n\n` +
+                                `*Observação:*\n\n`+ `Para agendamento solicitamos a entrada de 50% do valor (R$ ${deposit.toFixed(2)}). O restante deve ser pago no dia do evento após a conclusão dos serviços.`;
                 
                 window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
             }
