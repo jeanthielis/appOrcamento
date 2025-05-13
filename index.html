@@ -409,7 +409,7 @@
                                 `*Cliente:*  ${clientName}\n\n` +
                                 `*# Serviços:*\n${servicesText}\n` +
                                 `*# Serviços:*\n${servicesText}\n` +
-                                `*# Data do Evento:* ${new Date($('#eventDate').val()).toLocaleDateString('pt-BR')} -  *Hora do Evento:* ${$('#eventTime').val()}\n\n` +
+                                `*# Data/Hora do Evento:\n* ${new Date($('#eventDate').val()).toLocaleDateString('pt-BR')} - ${$('#eventTime').val()}\n\n` +
                                 `*# Total:* R$ ${total.toFixed(2)}\n\n` +
                                 `*# Local do Evento:*`+`\n\n ${$('#clientNeighborhood').val()}, ${$('#clientCity').val()}\n\n` +
                                 `*# Forma de Pagamento:*\n\n`+ `Crédito, Débito, PIX ou Dinheiro\n\n` +
